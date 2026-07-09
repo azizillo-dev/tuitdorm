@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ShieldAlert,
+  BarChart3,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -23,6 +24,7 @@ interface SidebarProps {
 
 const MENU_ITEMS = [
   { name: "Bosh sahifa", href: "/dashboard", icon: LayoutDashboard, roles: ["SUPER_ADMIN", "BLOCK_HEAD", "FLOOR_HEAD", "ASSISTANT"] },
+  { name: "Statistika (Grafiklar)", href: "/dashboard/statistika", icon: BarChart3, roles: ["SUPER_ADMIN", "BLOCK_HEAD", "FLOOR_HEAD"] },
   { name: "Talabalar ro'yxati", href: "/dashboard/students", icon: Users, roles: ["SUPER_ADMIN", "BLOCK_HEAD", "FLOOR_HEAD", "ASSISTANT"] },
   { name: "Davomat jurnali", href: "/dashboard/attendance", icon: ClipboardCheck, roles: ["SUPER_ADMIN", "BLOCK_HEAD", "FLOOR_HEAD", "ASSISTANT"] },
   { name: "Hisobotlar (Excel)", href: "/dashboard/reports", icon: FileSpreadsheet, roles: ["SUPER_ADMIN", "BLOCK_HEAD", "FLOOR_HEAD"] },
@@ -65,14 +67,14 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
       {/* Backdrop for mobile drawer */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/60 z-50 backdrop-blur-2xs transition-opacity"
+          className="md:hidden fixed inset-0 bg-black/60 z-50 transition-opacity"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Left Sidebar Navigation (~240px width, fixed) */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-60 bg-sidebar text-sidebartext border-r border-sidebarborder flex flex-col justify-between transition-transform duration-200 ease-in-out ${
+        className={`fixed md:sticky inset-y-0 md:top-0 left-0 z-50 w-60 md:h-screen md:shrink-0 bg-sidebar text-sidebartext border-r border-sidebarborder flex flex-col justify-between transition-transform duration-200 ease-in-out ${
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >

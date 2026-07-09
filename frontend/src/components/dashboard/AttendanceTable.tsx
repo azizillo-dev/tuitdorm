@@ -235,7 +235,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
 
                     {/* Monospace Unexcused Days */}
                     <td className="p-3 border-r border-divider text-right font-mono font-bold whitespace-nowrap">
-                      <span className={row.unexcusedDays >= 3 ? "text-[#B23B3B] bg-[#B23B3B]/10 px-1.5 py-0.5 rounded-[2px]" : "text-sub"}>
+                      <span className={row.unexcusedDays >= 3 ? "text-[#B23B3B] font-bold border border-[#B23B3B] px-1.5 py-0.5 rounded-[2px]" : "text-sub"}>
                         {row.unexcusedDays} kun
                       </span>
                     </td>
@@ -280,8 +280,8 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           aria-label="Bor deb qayd etish"
                           className={`min-h-[44px] min-w-[56px] sm:min-h-[36px] px-3.5 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "PRESENT"
-                              ? "bg-[#3A7D5C] text-white border-[#3A7D5C] shadow-2xs"
-                              : "bg-page text-[#3A7D5C] border-divider hover:border-[#3A7D5C]"
+                              ? "bg-[#3A7D5C] text-white border-[#3A7D5C] shadow-xs"
+                              : "bg-page text-muted border-divider hover:bg-[#3A7D5C] hover:text-white hover:border-[#3A7D5C]"
                           } disabled:opacity-40 disabled:cursor-not-allowed`}
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -295,8 +295,8 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           aria-label="Sababli deb qayd etish"
                           className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "EXCUSED"
-                              ? "bg-[#C08A2E] text-white border-[#C08A2E] shadow-2xs"
-                              : "bg-page text-[#C08A2E] border-divider hover:border-[#C08A2E]"
+                              ? "bg-[#C08A2E] text-white border-[#C08A2E] shadow-xs"
+                              : "bg-page text-muted border-divider hover:bg-[#C08A2E] hover:text-white hover:border-[#C08A2E]"
                           } disabled:opacity-40 disabled:cursor-not-allowed`}
                         >
                           <Clock className="w-3.5 h-3.5" />
@@ -310,8 +310,8 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           aria-label="Sababsiz deb qayd etish"
                           className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "UNEXCUSED"
-                              ? "bg-[#B23B3B] text-white border-[#B23B3B] shadow-2xs"
-                              : "bg-page text-[#B23B3B] border-divider hover:border-[#B23B3B]"
+                              ? "bg-[#B23B3B] text-white border-[#B23B3B] shadow-xs"
+                              : "bg-page text-muted border-divider hover:bg-[#B23B3B] hover:text-white hover:border-[#B23B3B]"
                           } disabled:opacity-40 disabled:cursor-not-allowed`}
                         >
                           <XCircle className="w-3.5 h-3.5" />

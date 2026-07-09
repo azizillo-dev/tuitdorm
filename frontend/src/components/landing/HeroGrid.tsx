@@ -25,37 +25,9 @@ interface RoomData {
   excused: number;
   unexcused: number;
   isDigitized: boolean;
-  students: {
-    name: string;
-    faculty: string;
-    status: "PRESENT" | "EXCUSED" | "UNEXCUSED";
-    time: string;
-  }[];
 }
 
 const BLOCKS = ["A-Blok", "B-Blok", "C-Blok", "D-Blok"];
-
-const STUDENT_NAMES = [
-  "Abdullayev Shaxzod",
-  "Karimov Jasur",
-  "Toshmatov Bobur",
-  "Raximov Ulug'bek",
-  "Ergashev Sardor",
-  "Olimov Bekzod",
-  "Saidov Doston",
-  "Nazarov Farrux",
-  "To'xtayev Mirzo",
-  "Sultanov Azamat",
-  "Muminov Jamshid",
-  "Kadirov Anvar",
-];
-
-const FACULTIES = [
-  "Kompyuter injiniringi",
-  "Dasturiy injiniring",
-  "Axborot xavfsizligi",
-  "Telekom. texnologiyalari",
-];
 
 function generateInitialRooms(block: string): RoomData[] {
   const rooms: RoomData[] = [];
@@ -68,23 +40,6 @@ function generateInitialRooms(block: string): RoomData[] {
       const excusedCount = mod === 5 ? 1 : 0;
       const presentCount = 4 - unexcusedCount - excusedCount;
 
-      const students = Array.from({ length: 4 }).map((_, idx) => {
-        let status: "PRESENT" | "EXCUSED" | "UNEXCUSED" = "PRESENT";
-        if (idx < unexcusedCount) status = "UNEXCUSED";
-        else if (idx < unexcusedCount + excusedCount) status = "EXCUSED";
-
-        const nameIdx = (roomNum + idx * 3) % STUDENT_NAMES.length;
-        const facIdx = (roomNum + idx) % FACULTIES.length;
-        const minute = (roomNum + idx * 7) % 60;
-
-        return {
-          name: STUDENT_NAMES[nameIdx],
-          faculty: FACULTIES[facIdx],
-          status,
-          time: `21:${minute < 10 ? "0" + minute : minute}:14`,
-        };
-      });
-
       rooms.push({
         id: `${block}-${roomNum}`,
         roomNumber: roomNum,
@@ -95,7 +50,6 @@ function generateInitialRooms(block: string): RoomData[] {
         excused: excusedCount,
         unexcused: unexcusedCount,
         isDigitized: false, // Starts in "paper ledger" mode, animated on load
-        students,
       });
     }
   }
@@ -105,14 +59,12 @@ function generateInitialRooms(block: string): RoomData[] {
 export function HeroGrid() {
   const [activeBlock, setActiveBlock] = useState("A-Blok");
   const [rooms, setRooms] = useState<RoomData[]>(() => generateInitialRooms("A-Blok"));
-  const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [digitizedCount, setDigitizedCount] = useState(0);
 
   useEffect(() => {
     const newRooms = generateInitialRooms(activeBlock);
     setRooms(newRooms);
-    setSelectedRoom(newRooms[0]);
     setDigitizedCount(0);
     setIsSimulating(true);
   }, [activeBlock]);
@@ -152,7 +104,6 @@ export function HeroGrid() {
     setIsSimulating(true);
   };
 
-  const totalStudents = rooms.length * 4;
   const totalPresent = rooms.reduce((acc, r) => acc + r.present, 0);
   const totalExcused = rooms.reduce((acc, r) => acc + r.excused, 0);
   const totalUnexcused = rooms.reduce((acc, r) => acc + r.unexcused, 0);
@@ -162,7 +113,7 @@ export function HeroGrid() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Concrete Headline & Subheadline */}
         <div className="max-w-3xl mb-10">
-          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-[2px] bg-surface border border-divider text-[12px] font-mono font-medium text-sub mb-4 shadow-2xs">
+          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-[2px] bg-surface border border-divider text-[12px] font-mono font-medium text-sub mb-4 shadow-xs">
             <Building2 className="w-3.5 h-3.5 text-accent" />
             <span>TATU YOTOQXONALAR MA&apos;MURIY REESTRI v2.4</span>
           </div>
@@ -176,7 +127,7 @@ export function HeroGrid() {
         </div>
 
         {/* Interactive Schematic Section */}
-        <div className="bg-surface border border-divider rounded-[2px] shadow-sm p-4 sm:p-6 lg:p-8">
+        <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] shadow-sm p-4 sm:p-6 lg:p-8">
           {/* Header of Schematic */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-divider mb-6">
             <div className="flex items-center space-x-2 overflow-x-auto pb-2 lg:pb-0">
@@ -189,7 +140,7 @@ export function HeroGrid() {
                   onClick={() => setActiveBlock(block)}
                   className={`px-4 py-1.5 rounded-[2px] text-xs font-mono font-medium transition-all border ${
                     activeBlock === block
-                      ? "bg-ink text-surface border-sidebarborder shadow-2xs"
+                      ? "bg-ink text-surface border-sidebarborder shadow-xs"
                       : "bg-page text-sub border-divider hover:text-main hover:border-accent"
                   }`}
                 >
@@ -226,13 +177,13 @@ export function HeroGrid() {
             </div>
           </div>
 
-          {/* Grid Layout: Rooms Schematic + Live Inspector Side panel */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Rooms Schematic (2 Cols on lg) */}
-            <div className="lg:col-span-2 space-y-4">
+          {/* Grid Layout: Rooms Schematic + Privacy Info Summary Box */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Rooms Schematic (3 Cols on lg) */}
+            <div className="lg:col-span-3 space-y-4">
               <div className="flex items-center justify-between text-xs font-mono text-sub">
-                <span>XONALAR SXEMASI ({activeBlock}) — JAMI {rooms.length} TA XONA</span>
-                <span>BOSING VA XONA NAZORATINI KO&apos;RING</span>
+                <span>XONALAR SXEMASI ({activeBlock}) — JAMI {rooms.length} TA XONA (UMUMIY KO&apos;RSATKICHLAR)</span>
+                <span>MAXFIYLIK SIYOSATIGA ASOSAN SHAQSIY MA&apos;LUMOTLAR YASHIRILGAN</span>
               </div>
 
               {/* Floor by floor display */}
@@ -246,24 +197,17 @@ export function HeroGrid() {
                       </div>
                       <div className="flex-1 p-2 grid grid-cols-4 sm:grid-cols-8 gap-2">
                         {floorRooms.map((room) => {
-                          const isSelected = selectedRoom?.id === room.id;
-                          // Determine border and accent based on room status
                           let statusBorder = "border-divider";
                           if (room.isDigitized) {
-                            if (room.unexcused > 0) statusBorder = "border-[#B23B3B] bg-[#B23B3B]/5";
-                            else if (room.excused > 0) statusBorder = "border-[#C08A2E] bg-[#C08A2E]/5";
-                            else statusBorder = "border-[#3A7D5C] bg-[#3A7D5C]/5";
+                            if (room.unexcused > 0) statusBorder = "border-[#B23B3B]";
+                            else if (room.excused > 0) statusBorder = "border-[#C08A2E]";
+                            else statusBorder = "border-[#3A7D5C]";
                           }
 
                           return (
-                            <button
+                            <div
                               key={room.id}
-                              onClick={() => setSelectedRoom(room)}
-                              className={`p-2 rounded-[2px] border text-left transition-all duration-150 relative ${statusBorder} ${
-                                isSelected
-                                  ? "ring-2 ring-accent shadow-sm font-semibold bg-surface"
-                                  : "hover:border-accent bg-surface"
-                              }`}
+                              className={`p-2 rounded-[2px] border text-left bg-surface ${statusBorder}`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-mono text-xs font-bold text-main">
@@ -294,7 +238,7 @@ export function HeroGrid() {
                                   <span className="italic text-[9px] text-muted">[✓] Qog&apos;oz</span>
                                 )}
                               </div>
-                            </button>
+                            </div>
                           );
                         })}
                       </div>
@@ -304,86 +248,38 @@ export function HeroGrid() {
               </div>
             </div>
 
-            {/* Room Live Inspector Panel (1 Col on lg) */}
-            <div className="border border-divider rounded-[2px] bg-page p-4 sm:p-5 flex flex-col justify-between">
+            {/* Privacy Roster Info Panel (1 Col on lg) */}
+            <div className="border border-divider border-t-[3px] border-t-accent rounded-[2px] bg-surface p-4 sm:p-5 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between pb-3 border-b border-divider mb-4">
-                  <div>
-                    <span className="text-[11px] font-mono uppercase text-sub tracking-wider block">
-                      TEZKOR NAZORAT INSPEKTORI
-                    </span>
-                    <h3 className="font-serif font-bold text-xl text-main mt-0.5">
-                      {selectedRoom ? `${selectedRoom.roomNumber}-Xona (${selectedRoom.block})` : "Xona tanlang"}
-                    </h3>
-                  </div>
-                  <div className="text-right font-mono text-xs">
-                    <span className="text-sub block">SIG&apos;IM</span>
-                    <span className="font-bold text-main">4 / 4 TALABA</span>
-                  </div>
+                <div className="pb-3 border-b border-divider mb-4">
+                  <span className="text-[11px] font-mono uppercase text-sub tracking-wider block">
+                    MA&apos;LUMOTLAR KO&apos;LAMI
+                  </span>
+                  <h3 className="font-serif font-bold text-lg text-main mt-0.5">
+                    Talabalar ro&apos;yxati va shaxsiy ma&apos;lumotlar
+                  </h3>
                 </div>
 
-                {selectedRoom ? (
-                  <div className="space-y-3">
-                    <div className="text-xs font-mono text-sub uppercase tracking-wider">
-                      TALABALAR QAYDNOMASI VA STATUSI:
-                    </div>
-                    {selectedRoom.students.map((student, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 bg-surface border border-divider rounded-[2px] flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-6 h-6 rounded-[2px] bg-page border border-divider flex items-center justify-center font-mono font-bold text-sub text-[10px]">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            <div className="font-medium text-main">{student.name}</div>
-                            <div className="text-[10px] text-sub font-mono">{student.faculty}</div>
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="flex items-center justify-end space-x-1.5 mb-0.5 font-mono text-[11px] font-medium">
-                            {student.status === "PRESENT" && (
-                              <>
-                                <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "var(--status-present)" }} />
-                                <span className="text-[#3A7D5C]">Bor</span>
-                              </>
-                            )}
-                            {student.status === "EXCUSED" && (
-                              <>
-                                <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "var(--status-excused)" }} />
-                                <span className="text-[#C08A2E]">Sababli yo&apos;q</span>
-                              </>
-                            )}
-                            {student.status === "UNEXCUSED" && (
-                              <>
-                                <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "var(--status-unexcused)" }} />
-                                <span className="text-[#B23B3B]">Sababsiz yo&apos;q</span>
-                              </>
-                            )}
-                          </div>
-                          <div className="text-[9px] font-mono text-muted">
-                            Qayd: {student.time}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <div className="space-y-4 text-xs text-sub leading-relaxed">
+                  <p>
+                    Ushbu ochiq sahifada faqat yotoqxona binolari, qavatlar va xonalarning umumiy bandlik holati, 
+                    davomat statistikasi hamda rasmiy tizim mexanizmlari namoyish etiladi.
+                  </p>
+                  <div className="p-3 bg-page border border-divider rounded-[2px] font-mono text-[11px] text-main">
+                    <span className="font-bold block mb-1">MAXFIYLIK VA RUXSATLAR:</span>
+                    Talabalar F.I.SH, ID raqami, fakulteti va aniq davomat vaqtlari faqat vakolatli bino mudiri, blok sardori 
+                    yoki qavat maslahatchisi tizimga kirganidan so&apos;ng ko&apos;rsatiladi.
                   </div>
-                ) : (
-                  <div className="py-12 text-center text-sub font-mono text-xs">
-                    Tafsilotlar uchun xonalardan birini tanlang
-                  </div>
-                )}
+                </div>
               </div>
 
-              {/* Bottom CTA for Dashboard Preview */}
+              {/* Bottom CTA for Dashboard / Auth */}
               <div className="mt-6 pt-4 border-t border-divider">
                 <Link
                   href="/dashboard"
-                  className="w-full py-2.5 px-4 bg-ink text-surface font-mono text-xs font-semibold rounded-[2px] flex items-center justify-center space-x-2 hover:bg-accent transition-colors shadow-2xs"
+                  className="w-full py-2.5 px-4 bg-ink text-surface font-mono text-xs font-semibold rounded-[2px] flex items-center justify-center space-x-2 hover:bg-accent transition-colors shadow-xs"
                 >
-                  <span>BOSHQARUV PANELIGA O&apos;TISH (DASHBOARD)</span>
+                  <span>TIZIMGA KIRISH VA JURNALNI KO&apos;RISH</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

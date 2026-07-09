@@ -137,18 +137,18 @@ export default function DashboardShellPage() {
   const unexcusedCount = students.filter((s) => s.status === "UNEXCUSED").length;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-page text-main">
+    <div className="h-screen overflow-hidden flex flex-col md:flex-row bg-page text-main">
       {/* Left Sidebar ~240px */}
       <Sidebar currentRole={currentRole} onRoleChange={setCurrentRole} />
 
       {/* Main Container Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <TopBar currentRole={currentRole} currentScope={scopeString} />
 
-        {/* Scrollable Content Area with generous padding */}
+        {/* Scrollable Content Area with generous padding and isolated scroll region */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           {/* Dashboard Header / Welcome & Context Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-divider">
             <div>
               <h1 className="font-serif text-2xl sm:text-3xl font-bold text-main leading-tight">
                 {currentRole === "SUPER_ADMIN" && "Universitet Davomat Muvofiqlashtirish Paneli"}
@@ -166,7 +166,7 @@ export default function DashboardShellPage() {
             <div className="flex items-center space-x-3 shrink-0">
               <button
                 onClick={() => alert("Rasmiy dekanat ogohlantirishi yuborildi!")}
-                className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:bg-[#B23B3B]/10 text-[#B23B3B] border border-[#B23B3B] rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-2xs"
+                className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:border-[#B23B3B] text-[#B23B3B] border border-divider rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-xs"
               >
                 <AlertCircle className="w-3.5 h-3.5" />
                 <span>DEKANATGA XABAR (3 KUN+)</span>
@@ -175,7 +175,7 @@ export default function DashboardShellPage() {
               {currentRole !== "ASSISTANT" && (
                 <button
                   onClick={() => alert("Yangi talaba xonaga biriktirildi.")}
-                  className="inline-flex items-center space-x-1.5 px-3 py-2 bg-ink text-surface hover:bg-accent rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-2xs border border-sidebarborder"
+                  className="inline-flex items-center space-x-1.5 px-3 py-2 bg-ink text-surface hover:bg-accent rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-xs border border-sidebarborder"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>TALABA QO&apos;SHISH</span>
@@ -184,13 +184,13 @@ export default function DashboardShellPage() {
             </div>
           </div>
 
-          {/* Institutional Alert Banner for Unexcused Absences */}
+          {/* Institutional Alert Banner for Unexcused Absences (Single accent border on solid white card) */}
           {unexcusedCount > 0 && (
-            <div className="p-4 bg-[#B23B3B]/10 border border-[#B23B3B]/40 rounded-[2px] flex items-start sm:items-center justify-between gap-4 font-mono text-xs">
+            <div className="p-4 bg-surface border border-divider border-l-[4px] border-l-[#B23B3B] rounded-[2px] shadow-xs flex items-start sm:items-center justify-between gap-4 font-mono text-xs">
               <div className="flex items-center space-x-3">
                 <AlertCircle className="w-5 h-5 text-[#B23B3B] shrink-0" />
                 <div>
-                  <span className="font-bold text-[#B23B3B] block">NAZORAT DIQQATIGA: {unexcusedCount} TA TALABA SABABSIZ KELMADI</span>
+                  <span className="font-bold text-main block">NAZORAT DIQQATIGA: {unexcusedCount} TA TALABA SABABSIZ KELMADI</span>
                   <span className="text-sub font-sans text-[11px]">
                     Ushbu talabalar bo&apos;yicha dalolatnoma tuzilishini yoki dekanatga xabarnoma jo&apos;natilishini tasdiqlang.
                   </span>
@@ -198,7 +198,7 @@ export default function DashboardShellPage() {
               </div>
               <button
                 onClick={() => alert("Dalolatnoma shablonlari PDF va Word formatida yuklandi.")}
-                className="px-3 py-1.5 bg-[#B23B3B] text-white rounded-[2px] font-bold text-[11px] shrink-0 hover:bg-[#993333] transition-colors"
+                className="px-3 py-1.5 bg-[#B23B3B] text-white rounded-[2px] font-bold text-[11px] shrink-0 hover:bg-[#993333] transition-colors shadow-xs"
               >
                 DALOLATNOMA TUZISH
               </button>
@@ -215,11 +215,8 @@ export default function DashboardShellPage() {
             }}
           />
 
-          {/* Recharts Trend & Comparison Graphs */}
-          <AttendanceCharts />
-
           {/* Main Dense Sortable Data Table */}
-          <div className="space-y-3">
+          <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <h2 className="font-serif font-bold text-xl text-main">
                 Talabalar davomat jurnali ({scopeString})
