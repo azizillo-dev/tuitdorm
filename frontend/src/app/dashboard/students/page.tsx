@@ -132,14 +132,14 @@ export default function StudentsDirectoryPage() {
 
             <div className="flex items-center space-x-3 shrink-0 font-mono text-xs text-sub bg-surface p-2.5 rounded-[8px] border border-divider shadow-xs">
               <ShieldAlert className="w-4 h-4 text-[#C08A2E] shrink-0" />
-              <span>DRF PageNumberPagination qoidalari bilan to&apos;liq mos holatda ishlaydi.</span>
+              <span>NAMOYISH REJIMI: real Student API Faza 2/3&apos;da ulanadi</span>
             </div>
           </div>
 
           {/* DRF Backend Architecture Specification Banner */}
           <div className="p-4 bg-surface border border-divider border-l-[4px] border-l-accent rounded-[8px] shadow-xs text-xs font-mono">
             <span className="font-bold text-main block mb-1">BACKEND METODOLOGIYASI (PHASE 2/3 DRF SPEC):</span>
-            `GET /api/v1/accounts/users/?page={page}&page_size={PAGE_SIZE}&search={debouncedSearch || "None"}&block_id={blockFilter}` so&apos;rovi orqali faqat joriy sahifaga kerakli 25 ta talaba yozuvi bazadan olinadi (`QuerySet.filter().paginate()`). Bu usul barcha 2200+ talabaning client-side xotirani to&apos;ldirishiga va mobil brauzerlarning qotib qolishiga (`lag/freeze`) yo&apos;l qo&apos;ymaydi.
+            `GET /api/v1/students/?page={page}&page_size={PAGE_SIZE}&search={debouncedSearch || "None"}&block={blockFilter}` so&apos;rovi orqali faqat joriy sahifaga kerakli 25 ta talaba yozuvi bazadan olinadi (`QuerySet.filter().paginate()`). Bu usul barcha 2200+ talabaning client-side xotirani to&apos;ldirishiga va mobil brauzerlarning qotib qolishiga (`lag/freeze`) yo&apos;l qo&apos;ymaydi.
           </div>
 
           {/* Search and Server-Side Filter Controls */}
