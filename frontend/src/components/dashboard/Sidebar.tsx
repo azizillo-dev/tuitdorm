@@ -53,13 +53,13 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
           <button
             onClick={() => setMobileOpen(true)}
             aria-label="Menyuni ochish"
-            className="p-2 -ml-2 rounded-[2px] text-sidebartext hover:bg-sidebaractive transition-colors"
+            className="p-2 -ml-2 rounded-[8px] text-sidebartext hover:bg-sidebaractive transition-colors shadow-xs"
           >
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-mono font-bold text-sm">TATU — REESTR</span>
         </div>
-        <span className="font-mono text-[11px] px-2 py-0.5 bg-sidebaractive border border-sidebarborder rounded-[2px] text-accent font-semibold">
+        <span className="font-mono text-[11px] px-2 py-0.5 bg-sidebaractive border border-sidebarborder rounded-[8px] text-accent font-semibold shadow-xs">
           {currentRole}
         </span>
       </div>
@@ -82,7 +82,7 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
           {/* Sidebar Header / Brand */}
           <div className="h-16 flex items-center justify-between px-5 border-b border-sidebarborder">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-8 h-8 bg-surface text-ink flex items-center justify-center rounded-[2px] font-mono font-bold text-sm">
+              <div className="w-8 h-8 bg-surface text-ink flex items-center justify-center rounded-[8px] font-mono font-bold text-sm shadow-xs">
                 TTJ
               </div>
               <div className="flex flex-col">
@@ -96,7 +96,7 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
             </Link>
             <button
               onClick={() => setMobileOpen(false)}
-              className="md:hidden p-1 text-muted hover:text-sidebartext"
+              className="md:hidden p-1 text-muted hover:text-sidebartext rounded-[8px]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -111,7 +111,7 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
             <select
               value={currentRole}
               onChange={(e) => onRoleChange(e.target.value as any)}
-              className="w-full bg-sidebar border border-sidebarborder rounded-[2px] text-xs text-sidebartext py-1.5 px-2 font-mono focus:outline-none focus:border-accent"
+              className="w-full bg-sidebar border border-sidebarborder rounded-[8px] text-xs text-sidebartext py-1.5 px-2 font-mono focus:outline-none focus:border-accent shadow-xs"
             >
               <option value="SUPER_ADMIN">1. SUPER_ADMIN</option>
               <option value="BLOCK_HEAD">2. BLOCK_HEAD</option>
@@ -133,9 +133,9 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
                   key={item.name}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2.5 text-xs font-medium transition-colors duration-150 rounded-[0px] ${
+                  className={`flex items-center space-x-3 px-3 py-2.5 text-xs font-medium transition-colors duration-150 rounded-[8px] ${
                     isActive
-                      ? "border-l-4 border-accent bg-sidebaractive text-sidebartext font-semibold"
+                      ? "border-l-4 border-accent bg-sidebaractive text-sidebartext font-semibold shadow-xs"
                       : "text-sidebartext/70 hover:text-sidebartext hover:bg-sidebaractive/50 border-l-4 border-transparent"
                   }`}
                 >
@@ -151,7 +151,7 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
         <div className="p-4 border-t border-sidebarborder">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-[2px] bg-accent/20 border border-sidebarborder flex items-center justify-center font-mono font-bold text-xs shrink-0 text-accent">
+              <div className="w-8 h-8 rounded-[8px] bg-accent/20 border border-sidebarborder flex items-center justify-center font-mono font-bold text-xs shrink-0 text-accent shadow-xs">
                 {currentRole === "SUPER_ADMIN" ? "SA" : currentRole === "BLOCK_HEAD" ? "BH" : "FH"}
               </div>
               <div className="truncate">
@@ -166,7 +166,7 @@ export function Sidebar({ currentRole, onRoleChange }: SidebarProps) {
             <Link
               href="/"
               title="Tizimdan chiqish"
-              className="p-1.5 text-muted hover:text-[#B23B3B] hover:bg-sidebaractive rounded-[2px] transition-colors shrink-0"
+              className="p-1.5 text-muted hover:text-[#B23B3B] hover:bg-sidebaractive rounded-[8px] transition-colors shrink-0 shadow-xs"
             >
               <LogOut className="w-4 h-4" />
             </Link>

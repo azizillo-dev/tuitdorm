@@ -30,7 +30,7 @@ export default function StatistikaPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-divider">
             <div>
-              <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-[2px] bg-surface border border-divider text-[11px] font-mono font-bold text-accent mb-2">
+              <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-[8px] bg-surface border border-divider text-[11px] font-mono font-bold text-accent mb-2">
                 <BarChart3 className="w-3.5 h-3.5" />
                 <span>LMS.TUIT.UZ FORMATIDAGI RASMIY STATISTIKA</span>
               </div>
@@ -43,7 +43,7 @@ export default function StatistikaPage() {
             </div>
 
             {currentRole === "FLOOR_HEAD" || currentRole === "ASSISTANT" ? (
-              <div className="p-2.5 bg-surface border border-divider rounded-[2px] font-mono text-xs text-sub flex items-center space-x-2">
+              <div className="p-2.5 bg-surface border border-divider rounded-[8px] font-mono text-xs text-sub flex items-center space-x-2">
                 <ShieldAlert className="w-4 h-4 text-[#C08A2E] shrink-0" />
                 <span>Bloklar taqqoslovi (Chart 2) cheklangan: faqat Bino/Blok mudiri va Superadmin uchun.</span>
               </div>
@@ -53,7 +53,7 @@ export default function StatistikaPage() {
           {/* Render charts scoped strictly to currentRole */}
           <AttendanceCharts currentRole={currentRole} />
 
-          <div className="p-4 bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] font-mono text-xs text-sub">
+          <div className="p-4 bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] font-mono text-xs text-sub">
             <span className="font-bold text-main block mb-1">METODOLOGIK ASOS VA KO&apos;LAM IZOLYATSIYASI:</span>
             Tizim Django REST Framework (DRF) backendidagi `PermissionDenied` va `get_queryset()` filtrlash kurallari bilan 
             to&apos;liq mos holatda ishlaydi. Qavat maslahatchisi (`FLOOR_HEAD`) yoki yordamchisi (`ASSISTANT`) boshqa blok va qavatlarning 

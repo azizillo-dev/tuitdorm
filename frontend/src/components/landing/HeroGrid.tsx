@@ -29,12 +29,11 @@ interface RoomData {
 
 const BLOCKS = ["A-Blok", "B-Blok", "C-Blok", "D-Blok"];
 
-function generateInitialRooms(block: string): RoomData[] {
+function generateInitialRooms(block: string, reducedMotion: boolean = false): RoomData[] {
   const rooms: RoomData[] = [];
   for (let floor = 4; floor >= 1; floor--) {
     for (let r = 1; r <= 8; r++) {
       const roomNum = floor * 100 + r;
-      // Deterministic pseudo-random status generation based on roomNum
       const mod = roomNum % 10;
       const unexcusedCount = mod === 7 ? 1 : mod === 3 ? 2 : 0;
       const excusedCount = mod === 5 ? 1 : 0;
@@ -49,7 +48,7 @@ function generateInitialRooms(block: string): RoomData[] {
         present: presentCount,
         excused: excusedCount,
         unexcused: unexcusedCount,
-        isDigitized: false, // Starts in "paper ledger" mode, animated on load
+        isDigitized: reducedMotion ? true : false, // If reduced-motion is true, show final state immediately
       });
     }
   }
@@ -58,20 +57,38 @@ function generateInitialRooms(block: string): RoomData[] {
 
 export function HeroGrid() {
   const [activeBlock, setActiveBlock] = useState("A-Blok");
-  const [rooms, setRooms] = useState<RoomData[]>(() => generateInitialRooms("A-Blok"));
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [rooms, setRooms] = useState<RoomData[]>(() => generateInitialRooms("A-Blok", false));
   const [isSimulating, setIsSimulating] = useState(false);
   const [digitizedCount, setDigitizedCount] = useState(0);
 
+  // Staggered mount animation triggers
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
-    const newRooms = generateInitialRooms(activeBlock);
-    setRooms(newRooms);
-    setDigitizedCount(0);
-    setIsSimulating(true);
+    // Check prefers-reduced-motion (FIX 4 safety check)
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isReduced = mediaQuery.matches;
+    setPrefersReducedMotion(isReduced);
+
+    const initial = generateInitialRooms(activeBlock, isReduced);
+    setRooms(initial);
+    if (isReduced) {
+      setDigitizedCount(initial.length);
+      setIsSimulating(false);
+    } else {
+      setDigitizedCount(0);
+      setIsSimulating(true);
+    }
+
+    // Trigger mount fade-in after 50ms
+    const timer = setTimeout(() => setIsMounted(true), 50);
+    return () => clearTimeout(timer);
   }, [activeBlock]);
 
   // Animation loop simulating transition from paper checkmark to digital status
   useEffect(() => {
-    if (!isSimulating) return;
+    if (!isSimulating || prefersReducedMotion) return;
 
     const undigitized = rooms.filter((r) => !r.isDigitized);
     if (undigitized.length === 0) {
@@ -80,7 +97,6 @@ export function HeroGrid() {
     }
 
     const timer = setTimeout(() => {
-      // Digitization step: pick up to 3 cells per tick
       setRooms((prev) => {
         let count = 0;
         const next = prev.map((room) => {
@@ -96,9 +112,10 @@ export function HeroGrid() {
     }, 120);
 
     return () => clearTimeout(timer);
-  }, [rooms, isSimulating]);
+  }, [rooms, isSimulating, prefersReducedMotion]);
 
   const triggerResetDemo = () => {
+    if (prefersReducedMotion) return;
     setRooms((prev) => prev.map((r) => ({ ...r, isDigitized: false })));
     setDigitizedCount(0);
     setIsSimulating(true);
@@ -108,26 +125,48 @@ export function HeroGrid() {
   const totalExcused = rooms.reduce((acc, r) => acc + r.excused, 0);
   const totalUnexcused = rooms.reduce((acc, r) => acc + r.unexcused, 0);
 
+  // Staggered animation classes respecting reduced motion
+  const getStaggerClass = (delayMs: number) => {
+    if (prefersReducedMotion) return "opacity-100 translate-y-0";
+    return `transition-all duration-400 ease-out ${
+      isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+    }`;
+  };
+
   return (
-    <section id="grid-schematic" className="py-12 sm:py-16 bg-page border-b border-divider">
+    <section id="grid-schematic" className="py-12 sm:py-16 bg-page border-b border-divider overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Concrete Headline & Subheadline */}
+        {/* Concrete Headline & Subheadline with Staggered Fade + Slide-up (80-120ms separation) */}
         <div className="max-w-3xl mb-10">
-          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-[2px] bg-surface border border-divider text-[12px] font-mono font-medium text-sub mb-4 shadow-xs">
+          <div
+            style={{ transitionDelay: prefersReducedMotion ? "0ms" : "0ms" }}
+            className={`inline-flex items-center space-x-2 px-2.5 py-1 rounded-[8px] bg-surface border border-divider text-[12px] font-mono font-medium text-sub mb-4 shadow-xs ${getStaggerClass(0)}`}
+          >
             <Building2 className="w-3.5 h-3.5 text-accent" />
             <span>TATU YOTOQXONALAR MA&apos;MURIY REESTRI v2.4</span>
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-main leading-tight tracking-tight mb-4">
+
+          <h1
+            style={{ transitionDelay: prefersReducedMotion ? "0ms" : "100ms" }}
+            className={`font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-main leading-tight tracking-tight mb-4 ${getStaggerClass(100)}`}
+          >
             Talabalar turar joylarida kunlik davomat va qaydnoma hisobini raqamlashtirilgan nazorat qilish tizimi.
           </h1>
-          <p className="text-base sm:text-lg text-sub font-sans leading-relaxed">
+
+          <p
+            style={{ transitionDelay: prefersReducedMotion ? "0ms" : "200ms" }}
+            className={`text-base sm:text-lg text-sub font-sans leading-relaxed ${getStaggerClass(200)}`}
+          >
             Bino sardorlari, blok mudirlari va qavat maslahatchilari uchun davomat jurnallarini qog&apos;ozsiz yuritish, 
             takroriy sababsiz qoldirishlarni aniqlash va rasmiy Excel hisobotlarni bir eshikdan boshqarish.
           </p>
         </div>
 
-        {/* Interactive Schematic Section */}
-        <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] shadow-sm p-4 sm:p-6 lg:p-8">
+        {/* Interactive Schematic Section (300ms delay stagger) */}
+        <div
+          style={{ transitionDelay: prefersReducedMotion ? "0ms" : "300ms" }}
+          className={`bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] shadow-xs p-4 sm:p-6 lg:p-8 ${getStaggerClass(300)}`}
+        >
           {/* Header of Schematic */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-divider mb-6">
             <div className="flex items-center space-x-2 overflow-x-auto pb-2 lg:pb-0">
@@ -138,7 +177,7 @@ export function HeroGrid() {
                 <button
                   key={block}
                   onClick={() => setActiveBlock(block)}
-                  className={`px-4 py-1.5 rounded-[2px] text-xs font-mono font-medium transition-all border ${
+                  className={`px-4 py-1.5 rounded-[8px] text-xs font-mono font-medium transition-all duration-200 border ${
                     activeBlock === block
                       ? "bg-ink text-surface border-sidebarborder shadow-xs"
                       : "bg-page text-sub border-divider hover:text-main hover:border-accent"
@@ -168,11 +207,17 @@ export function HeroGrid() {
 
               <button
                 onClick={triggerResetDemo}
-                disabled={isSimulating}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-mono bg-page hover:bg-divider text-main border border-divider rounded-[2px] transition-colors disabled:opacity-50"
+                disabled={isSimulating || prefersReducedMotion}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-mono bg-page hover:bg-divider text-main border border-divider rounded-[8px] transition-colors disabled:opacity-50 shadow-xs"
               >
-                <RotateCcw className={`w-3.5 h-3.5 ${isSimulating ? "animate-spin text-accent" : ""}`} />
-                <span>{isSimulating ? `Raqamlash jarayoni (${Math.round((digitizedCount / rooms.length) * 100)}%)...` : "Qog'oz qaydnomani raqamlash demo"}</span>
+                <RotateCcw className={`w-3.5 h-3.5 ${isSimulating && !prefersReducedMotion ? "animate-spin text-accent" : ""}`} />
+                <span>
+                  {prefersReducedMotion
+                    ? "Raqamlangan reestr (Reduced Motion)"
+                    : isSimulating
+                    ? `Raqamlash jarayoni (${Math.round((digitizedCount / rooms.length) * 100)}%)...`
+                    : "Qog'oz qaydnomani raqamlash demo"}
+                </span>
               </button>
             </div>
           </div>
@@ -191,7 +236,7 @@ export function HeroGrid() {
                 {[4, 3, 2, 1].map((floorNum) => {
                   const floorRooms = rooms.filter((r) => r.floor === floorNum);
                   return (
-                    <div key={floorNum} className="flex items-stretch border border-divider rounded-[2px] overflow-hidden bg-page">
+                    <div key={floorNum} className="flex items-stretch border border-divider rounded-[8px] overflow-hidden bg-page">
                       <div className="w-20 bg-surface border-r border-divider flex flex-col items-center justify-center py-2 px-1 font-mono text-[11px] font-bold text-sub">
                         <span>{floorNum}-QAVAT</span>
                       </div>
@@ -207,7 +252,10 @@ export function HeroGrid() {
                           return (
                             <div
                               key={room.id}
-                              className={`p-2 rounded-[2px] border text-left bg-surface ${statusBorder}`}
+                              style={{
+                                transitionDuration: prefersReducedMotion ? "0ms" : "300ms",
+                              }}
+                              className={`p-2 rounded-[6px] border text-left bg-surface transition-colors ease-out ${statusBorder}`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-mono text-xs font-bold text-main">
@@ -215,7 +263,7 @@ export function HeroGrid() {
                                 </span>
                                 {room.isDigitized ? (
                                   <span
-                                    className="w-2 h-2 rounded-full inline-block"
+                                    className="w-2 h-2 rounded-full inline-block transition-transform duration-300 scale-100"
                                     style={{
                                       backgroundColor:
                                         room.unexcused > 0
@@ -249,7 +297,7 @@ export function HeroGrid() {
             </div>
 
             {/* Privacy Roster Info Panel (1 Col on lg) */}
-            <div className="border border-divider border-t-[3px] border-t-accent rounded-[2px] bg-surface p-4 sm:p-5 flex flex-col justify-between">
+            <div className="border border-divider border-t-[3px] border-t-accent rounded-[8px] bg-surface p-4 sm:p-5 flex flex-col justify-between shadow-xs">
               <div>
                 <div className="pb-3 border-b border-divider mb-4">
                   <span className="text-[11px] font-mono uppercase text-sub tracking-wider block">
@@ -265,7 +313,7 @@ export function HeroGrid() {
                     Ushbu ochiq sahifada faqat yotoqxona binolari, qavatlar va xonalarning umumiy bandlik holati, 
                     davomat statistikasi hamda rasmiy tizim mexanizmlari namoyish etiladi.
                   </p>
-                  <div className="p-3 bg-page border border-divider rounded-[2px] font-mono text-[11px] text-main">
+                  <div className="p-3 bg-page border border-divider rounded-[8px] font-mono text-[11px] text-main shadow-xs">
                     <span className="font-bold block mb-1">MAXFIYLIK VA RUXSATLAR:</span>
                     Talabalar F.I.SH, ID raqami, fakulteti va aniq davomat vaqtlari faqat vakolatli bino mudiri, blok sardori 
                     yoki qavat maslahatchisi tizimga kirganidan so&apos;ng ko&apos;rsatiladi.
@@ -277,7 +325,7 @@ export function HeroGrid() {
               <div className="mt-6 pt-4 border-t border-divider">
                 <Link
                   href="/dashboard"
-                  className="w-full py-2.5 px-4 bg-ink text-surface font-mono text-xs font-semibold rounded-[2px] flex items-center justify-center space-x-2 hover:bg-accent transition-colors shadow-xs"
+                  className="w-full py-2.5 px-4 bg-ink text-surface font-mono text-xs font-semibold rounded-[8px] flex items-center justify-center space-x-2 hover:bg-accent transition-colors shadow-xs"
                 >
                   <span>TIZIMGA KIRISH VA JURNALNI KO&apos;RISH</span>
                   <ArrowRight className="w-3.5 h-3.5" />

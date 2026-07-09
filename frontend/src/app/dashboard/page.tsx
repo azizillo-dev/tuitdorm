@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { AttendanceCharts } from "@/components/dashboard/AttendanceCharts";
 import { AttendanceTable, StudentRow } from "@/components/dashboard/AttendanceTable";
-import { AlertCircle, FileSpreadsheet, PlusCircle, ShieldCheck } from "lucide-react";
+import { AlertCircle, Building2, ChevronRight, FileSpreadsheet, Layers, PlusCircle, ShieldCheck, Users, ArrowLeft } from "lucide-react";
 
 const INITIAL_STUDENTS: StudentRow[] = [
   {
@@ -99,18 +98,42 @@ const INITIAL_STUDENTS: StudentRow[] = [
   },
 ];
 
+const BLOCK_SUMMARIES = [
+  { id: "A-Blok", name: "A-Blok (Asosiy Bino)", students: 560, occupancy: 94.8, present: 531, excused: 19, unexcused: 10 },
+  { id: "B-Blok", name: "B-Blok (O'quv-Yotoq)", students: 580, occupancy: 91.2, present: 529, excused: 31, unexcused: 20 },
+  { id: "C-Blok", name: "C-Blok (Talabalar uyi #3)", students: 540, occupancy: 96.5, present: 521, excused: 15, unexcused: 4 },
+  { id: "D-Blok", name: "D-Blok (Talabalar uyi #4)", students: 520, occupancy: 89.4, present: 465, excused: 35, unexcused: 20 },
+];
+
+const FLOOR_SUMMARIES = [
+  { floor: 4, name: "4-Qavat (Xonalar 401 - 415)", students: 30, occupancy: 96.6, present: 29, excused: 1, unexcused: 0 },
+  { floor: 3, name: "3-Qavat (Xonalar 301 - 315)", students: 30, occupancy: 93.3, present: 28, excused: 1, unexcused: 1 },
+  { floor: 2, name: "2-Qavat (Xonalar 201 - 215)", students: 30, occupancy: 90.0, present: 27, excused: 2, unexcused: 1 },
+  { floor: 1, name: "1-Qavat (Xonalar 101 - 115)", students: 30, occupancy: 100.0, present: 30, excused: 0, unexcused: 0 },
+];
+
 export default function DashboardShellPage() {
   const [currentRole, setCurrentRole] = useState<"SUPER_ADMIN" | "BLOCK_HEAD" | "FLOOR_HEAD" | "ASSISTANT">("FLOOR_HEAD");
   const [students, setStudents] = useState<StudentRow[]>(INITIAL_STUDENTS);
 
-  const scopeString =
-    currentRole === "SUPER_ADMIN"
-      ? "Barcha Binolar / 4 ta Blok / 16 ta Qavat"
-      : currentRole === "BLOCK_HEAD"
-      ? "A-Blok / Barcha 4 ta Qavat"
-      : "A-Blok / 3-Qavat (Xonalar 301 - 312)";
+  // Scalability Drill-Down State (FIX 1 & FIX 3)
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
-  const canEditAttendance = currentRole === "FLOOR_HEAD" || currentRole === "ASSISTANT" || currentRole === "BLOCK_HEAD" || currentRole === "SUPER_ADMIN";
+  // Handle role changes gracefully resetting or locking drill-down state
+  const handleRoleChange = (role: "SUPER_ADMIN" | "BLOCK_HEAD" | "FLOOR_HEAD" | "ASSISTANT") => {
+    setCurrentRole(role);
+    if (role === "SUPER_ADMIN") {
+      setSelectedBlock(null);
+      setSelectedFloor(null);
+    } else if (role === "BLOCK_HEAD") {
+      setSelectedBlock("A-Blok");
+      setSelectedFloor(null);
+    } else {
+      setSelectedBlock("A-Blok");
+      setSelectedFloor(3);
+    }
+  };
 
   const handleStatusChange = (studentId: string, newStatus: "PRESENT" | "EXCUSED" | "UNEXCUSED") => {
     setStudents((prev) =>
@@ -136,25 +159,49 @@ export default function DashboardShellPage() {
   const excusedCount = students.filter((s) => s.status === "EXCUSED").length;
   const unexcusedCount = students.filter((s) => s.status === "UNEXCUSED").length;
 
+  const canEditAttendance = currentRole === "FLOOR_HEAD" || currentRole === "ASSISTANT" || currentRole === "BLOCK_HEAD" || currentRole === "SUPER_ADMIN";
+
+  // Compute what scope string to show or use for TopBar
+  const isSuper = currentRole === "SUPER_ADMIN";
+  const isBlockHead = currentRole === "BLOCK_HEAD";
+
+  // Determine current active view mode: "BLOCKS_OVERVIEW" | "FLOORS_OVERVIEW" | "STUDENTS_TABLE"
+  const viewMode =
+    isSuper && !selectedBlock && selectedFloor === null
+      ? "BLOCKS_OVERVIEW"
+      : (isSuper || isBlockHead) && selectedFloor === null
+      ? "FLOORS_OVERVIEW"
+      : "STUDENTS_TABLE";
+
   return (
     <div className="h-screen overflow-hidden flex flex-col md:flex-row bg-page text-main">
       {/* Left Sidebar ~240px */}
-      <Sidebar currentRole={currentRole} onRoleChange={setCurrentRole} />
+      <Sidebar currentRole={currentRole} onRoleChange={handleRoleChange} />
 
       {/* Main Container Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <TopBar currentRole={currentRole} currentScope={scopeString} />
+        <TopBar
+          currentRole={currentRole}
+          selectedBlock={isSuper ? selectedBlock : "A-Blok"}
+          onBlockChange={(block) => {
+            setSelectedBlock(block);
+            if (!block) setSelectedFloor(null);
+          }}
+          selectedFloor={selectedFloor}
+          onFloorChange={(floor) => {
+            setSelectedFloor(floor);
+          }}
+        />
 
         {/* Scrollable Content Area with generous padding and isolated scroll region */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           {/* Dashboard Header / Welcome & Context Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-divider">
             <div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-main leading-tight">
-                {currentRole === "SUPER_ADMIN" && "Universitet Davomat Muvofiqlashtirish Paneli"}
-                {currentRole === "BLOCK_HEAD" && "A-Blok Ma'muriy Davomat Paneli"}
-                {currentRole === "FLOOR_HEAD" && "3-Qavat Davomat Jurnali va Nazorati"}
-                {currentRole === "ASSISTANT" && "3-Qavat Maslahatchi Yordamchisi Paneli"}
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-main leading-tight flex items-center gap-2">
+                {viewMode === "BLOCKS_OVERVIEW" && "Barcha Binolar va Bloklar Davomat Paneli (2200+ talaba)"}
+                {viewMode === "FLOORS_OVERVIEW" && `${selectedBlock || "A-Blok"} — Qavatlar Bo'yicha Ma'muriy Tahlil`}
+                {viewMode === "STUDENTS_TABLE" && `${selectedBlock || "A-Blok"}, ${selectedFloor || 3}-Qavat Davomat Jurnali (~30 talaba)`}
               </h1>
               <p className="text-sub text-xs sm:text-sm font-sans mt-1">
                 Joriy sana: {new Date().toLocaleDateString("uz-UZ", { day: "2-digit", month: "long", year: "numeric" })} | 
@@ -166,16 +213,16 @@ export default function DashboardShellPage() {
             <div className="flex items-center space-x-3 shrink-0">
               <button
                 onClick={() => alert("Rasmiy dekanat ogohlantirishi yuborildi!")}
-                className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:border-[#B23B3B] text-[#B23B3B] border border-divider rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-xs"
+                className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:border-[#B23B3B] text-[#B23B3B] border border-divider rounded-[8px] text-xs font-mono font-semibold transition-colors shadow-xs"
               >
                 <AlertCircle className="w-3.5 h-3.5" />
-                <span>DEKANATGA XABAR (3 KUN+)</span>
+                <span>DEKANATGA XABAR</span>
               </button>
 
               {currentRole !== "ASSISTANT" && (
                 <button
                   onClick={() => alert("Yangi talaba xonaga biriktirildi.")}
-                  className="inline-flex items-center space-x-1.5 px-3 py-2 bg-ink text-surface hover:bg-accent rounded-[2px] text-xs font-mono font-semibold transition-colors shadow-xs border border-sidebarborder"
+                  className="inline-flex items-center space-x-1.5 px-3 py-2 bg-ink text-surface hover:bg-accent rounded-[8px] text-xs font-mono font-semibold transition-colors shadow-xs border border-sidebarborder"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>TALABA QO&apos;SHISH</span>
@@ -185,8 +232,8 @@ export default function DashboardShellPage() {
           </div>
 
           {/* Institutional Alert Banner for Unexcused Absences (Single accent border on solid white card) */}
-          {unexcusedCount > 0 && (
-            <div className="p-4 bg-surface border border-divider border-l-[4px] border-l-[#B23B3B] rounded-[2px] shadow-xs flex items-start sm:items-center justify-between gap-4 font-mono text-xs">
+          {unexcusedCount > 0 && viewMode === "STUDENTS_TABLE" && (
+            <div className="p-4 bg-surface border border-divider border-l-[4px] border-l-[#B23B3B] rounded-[8px] shadow-xs flex items-start sm:items-center justify-between gap-4 font-mono text-xs">
               <div className="flex items-center space-x-3">
                 <AlertCircle className="w-5 h-5 text-[#B23B3B] shrink-0" />
                 <div>
@@ -198,39 +245,190 @@ export default function DashboardShellPage() {
               </div>
               <button
                 onClick={() => alert("Dalolatnoma shablonlari PDF va Word formatida yuklandi.")}
-                className="px-3 py-1.5 bg-[#B23B3B] text-white rounded-[2px] font-bold text-[11px] shrink-0 hover:bg-[#993333] transition-colors shadow-xs"
+                className="px-3 py-1.5 bg-[#B23B3B] text-white rounded-[8px] font-bold text-[11px] shrink-0 hover:bg-[#993333] transition-colors shadow-xs"
               >
                 DALOLATNOMA TUZISH
               </button>
             </div>
           )}
 
-          {/* KPI Summary Cards */}
-          <DashboardStats
-            stats={{
-              totalStudents: students.length,
-              presentCount,
-              excusedCount,
-              unexcusedCount,
-            }}
-          />
-
-          {/* Main Dense Sortable Data Table */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h2 className="font-serif font-bold text-xl text-main">
-                Talabalar davomat jurnali ({scopeString})
-              </h2>
-              <span className="font-mono text-xs text-sub">
-                Tahrirlash huquqi: <span className="text-accent font-bold">{canEditAttendance ? "MAVJUD (BOR/YO'Q)" : "FAQAT KO'RISH"}</span>
-              </span>
+          {/* Breadcrumb / Back Navigation when drilled down */}
+          {viewMode !== "BLOCKS_OVERVIEW" && isSuper && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  if (viewMode === "STUDENTS_TABLE" && selectedBlock) {
+                    setSelectedFloor(null);
+                  } else {
+                    setSelectedBlock(null);
+                    setSelectedFloor(null);
+                  }
+                }}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-surface hover:bg-sidebaractive border border-divider rounded-[8px] text-xs font-mono font-semibold text-accent shadow-xs transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>
+                  {viewMode === "STUDENTS_TABLE"
+                    ? `Orqaga (${selectedBlock || "A-Blok"} Qavatlar ro'yxatiga)`
+                    : "Orqaga (Barcha Bloklar ro'yxatiga)"}
+                </span>
+              </button>
             </div>
-            <AttendanceTable
-              data={students}
-              onStatusChange={handleStatusChange}
-              canEdit={canEditAttendance}
-            />
-          </div>
+          )}
+
+          {viewMode === "STUDENTS_TABLE" && isBlockHead && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setSelectedFloor(null)}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-surface hover:bg-sidebaractive border border-divider rounded-[8px] text-xs font-mono font-semibold text-accent shadow-xs transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Orqaga (A-Blok Barcha Qavatlariga)</span>
+              </button>
+            </div>
+          )}
+
+          {/* VIEW MODE 1: BLOCKS OVERVIEW (For Super Admin default, 2200+ students summarized into 4 cards) */}
+          {viewMode === "BLOCKS_OVERVIEW" && (
+            <div className="space-y-4">
+              <div className="p-4 bg-surface border border-divider border-l-[4px] border-l-accent rounded-[8px] shadow-xs text-xs font-mono">
+                <span className="font-bold text-main block mb-0.5">SCALABILITY ARCHITECTURE (2200+ TALABA):</span>
+                Superadmin yoki Bino mudiriga 2200 ta talaba birdaniga yassi jadval (`flat table`) bo&apos;lib yuklanmaydi — bu tizimni 
+                qotishidan saqlaydi. Blokni tanlab qavatga, qavatdan esa faqat o&apos;sha qavatdagi ~30 ta talaba jadvaliga o&apos;tiladi.
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {BLOCK_SUMMARIES.map((block) => (
+                  <div
+                    key={block.id}
+                    onClick={() => {
+                      setSelectedBlock(block.id);
+                      setSelectedFloor(null);
+                    }}
+                    className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-5 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
+                  >
+                    <div className="flex items-start justify-between border-b border-divider pb-3">
+                      <div>
+                        <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-[6px] bg-accent/10 text-accent font-mono text-[11px] font-bold mb-1">
+                          <Building2 className="w-3.5 h-3.5" />
+                          <span>{block.id}</span>
+                        </div>
+                        <h3 className="font-serif font-bold text-lg text-main group-hover:text-accent transition-colors">
+                          {block.name}
+                        </h3>
+                      </div>
+                      <span className="font-mono text-2xl font-bold text-main">
+                        {block.occupancy}%
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 font-mono text-xs text-center py-1">
+                      <div className="p-2 bg-page border border-divider rounded-[6px]">
+                        <span className="block text-sub text-[10px]">BOR</span>
+                        <span className="font-bold text-[#3A7D5C] text-sm">{block.present}</span>
+                      </div>
+                      <div className="p-2 bg-page border border-divider rounded-[6px]">
+                        <span className="block text-sub text-[10px]">SABABLI</span>
+                        <span className="font-bold text-[#C08A2E] text-sm">{block.excused}</span>
+                      </div>
+                      <div className="p-2 bg-page border border-divider rounded-[6px]">
+                        <span className="block text-sub text-[10px]">SABABSIZ</span>
+                        <span className="font-bold text-[#B23B3B] text-sm">{block.unexcused}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono pt-2 border-t border-divider">
+                      <span className="text-sub">Jami talabalar: {block.students} ta</span>
+                      <span className="text-accent font-bold inline-flex items-center group-hover:translate-x-1 transition-transform">
+                        Qavatlarni ko&apos;rish <ChevronRight className="w-4 h-4 ml-0.5" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW MODE 2: FLOORS OVERVIEW (For Block Head default or Super Admin drilled down into block) */}
+          {viewMode === "FLOORS_OVERVIEW" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {FLOOR_SUMMARIES.map((floorItem) => (
+                  <div
+                    key={floorItem.floor}
+                    onClick={() => setSelectedFloor(floorItem.floor)}
+                    className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
+                  >
+                    <div className="flex items-center justify-between border-b border-divider pb-2.5">
+                      <span className="font-mono text-sm font-bold text-main group-hover:text-accent transition-colors">
+                        {floorItem.floor}-QAVAT
+                      </span>
+                      <span className="font-mono text-sm font-bold text-[#3A7D5C]">
+                        {floorItem.occupancy}%
+                      </span>
+                    </div>
+
+                    <p className="font-sans text-xs text-sub leading-tight">
+                      {floorItem.name} (~30 talaba)
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-1 font-mono text-[11px] text-center">
+                      <div className="p-1.5 bg-page border border-divider rounded-[4px]">
+                        <span className="block text-sub text-[9px]">BOR</span>
+                        <span className="font-bold text-[#3A7D5C]">{floorItem.present}</span>
+                      </div>
+                      <div className="p-1.5 bg-page border border-divider rounded-[4px]">
+                        <span className="block text-sub text-[9px]">SABAB</span>
+                        <span className="font-bold text-[#C08A2E]">{floorItem.excused}</span>
+                      </div>
+                      <div className="p-1.5 bg-page border border-divider rounded-[4px]">
+                        <span className="block text-sub text-[9px]">YO&apos;Q</span>
+                        <span className="font-bold text-[#B23B3B]">{floorItem.unexcused}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right pt-2 border-t border-divider font-mono text-xs text-accent font-bold">
+                      <span className="inline-flex items-center group-hover:translate-x-1 transition-transform">
+                        Jurnalga o&apos;tish <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW MODE 3: STUDENTS TABLE (~30 students on a specific Floor) */}
+          {viewMode === "STUDENTS_TABLE" && (
+            <>
+              {/* KPI Summary Cards */}
+              <DashboardStats
+                stats={{
+                  totalStudents: students.length,
+                  presentCount,
+                  excusedCount,
+                  unexcusedCount,
+                }}
+              />
+
+              {/* Main Dense Sortable Data Table */}
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="font-serif font-bold text-xl text-main">
+                    Talabalar davomat jurnali ({selectedBlock || "A-Blok"}, {selectedFloor || 3}-Qavat)
+                  </h2>
+                  <span className="font-mono text-xs text-sub">
+                    Tahrirlash huquqi: <span className="text-accent font-bold">{canEditAttendance ? "MAVJUD (BOR/YO'Q)" : "FAQAT KO'RISH"}</span>
+                  </span>
+                </div>
+                <AttendanceTable
+                  data={students}
+                  onStatusChange={handleStatusChange}
+                  canEdit={canEditAttendance}
+                />
+              </div>
+            </>
+          )}
         </main>
       </div>
     </div>

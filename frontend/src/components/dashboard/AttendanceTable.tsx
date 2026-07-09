@@ -57,7 +57,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
     });
 
   return (
-    <div className="bg-card border border-divider rounded-[2px] shadow-2xs overflow-hidden">
+    <div className="bg-surface border border-divider rounded-[8px] shadow-xs overflow-hidden">
       {/* Table Header Controls */}
       <div className="p-4 border-b border-divider flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         {/* Search Input */}
@@ -68,19 +68,19 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
             placeholder="Talaba F.I.SH, Xona raqami yoki ID bo'yicha qidirish..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-page border border-divider rounded-[2px] text-xs font-mono text-main placeholder:text-muted focus:outline-none focus:border-accent"
+            className="w-full pl-9 pr-4 py-2 bg-page border border-divider rounded-[8px] text-xs font-mono text-main placeholder:text-muted focus:outline-none focus:border-accent shadow-xs"
           />
         </div>
 
         {/* Filter and Export Controls */}
         <div className="flex items-center space-x-3 overflow-x-auto pb-1 sm:pb-0">
-          <div className="flex items-center space-x-1.5 bg-page border border-divider rounded-[2px] p-1 text-xs font-mono">
+          <div className="flex items-center space-x-1.5 bg-page border border-divider rounded-[8px] p-1 text-xs font-mono shadow-xs">
             <Filter className="w-3.5 h-3.5 text-muted ml-1" />
             {(["ALL", "PRESENT", "EXCUSED", "UNEXCUSED"] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`px-2.5 py-1 rounded-[2px] transition-colors ${
+                className={`px-2.5 py-1 rounded-[6px] transition-colors ${
                   filterStatus === status
                     ? "bg-ink text-surface font-semibold"
                     : "text-sub hover:text-main"
@@ -99,7 +99,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
 
           <button
             onClick={() => alert("Excel (.xlsx) hisobot yuklandi: A-Blok_3-Qavat_Jurnal.xlsx")}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:bg-divider text-main border border-divider rounded-[2px] text-xs font-mono transition-colors shrink-0"
+            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-page hover:bg-divider text-main border border-divider rounded-[8px] text-xs font-mono transition-colors shrink-0 shadow-xs"
           >
             <Download className="w-3.5 h-3.5 text-accent" />
             <span>EXCEL YUKLASH</span>
@@ -235,7 +235,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
 
                     {/* Monospace Unexcused Days */}
                     <td className="p-3 border-r border-divider text-right font-mono font-bold whitespace-nowrap">
-                      <span className={row.unexcusedDays >= 3 ? "text-[#B23B3B] font-bold border border-[#B23B3B] px-1.5 py-0.5 rounded-[2px]" : "text-sub"}>
+                      <span className={row.unexcusedDays >= 3 ? "text-[#B23B3B] font-bold border border-[#B23B3B] px-1.5 py-0.5 rounded-[4px]" : "text-sub"}>
                         {row.unexcusedDays} kun
                       </span>
                     </td>
@@ -265,7 +265,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                         >
                           {row.status === "PRESENT" && "Bor (Present)"}
                           {row.status === "EXCUSED" && "Sababli (Excused)"}
-                          {row.status === "UNEXCUSED" && "Sababsiz (Unexcused)"}
+                          {row.status === "UNEXCUSED" && "Sababsiz (Unex)"}
                         </span>
                       </div>
                     </td>
@@ -278,7 +278,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           onClick={() => canEdit && onStatusChange(row.id, "PRESENT")}
                           disabled={!canEdit}
                           aria-label="Bor deb qayd etish"
-                          className={`min-h-[44px] min-w-[56px] sm:min-h-[36px] px-3.5 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                          className={`min-h-[44px] min-w-[56px] sm:min-h-[36px] px-3.5 py-2 sm:py-1.5 rounded-[4px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "PRESENT"
                               ? "bg-[#3A7D5C] text-white border-[#3A7D5C] shadow-xs"
                               : "bg-page text-muted border-divider hover:bg-[#3A7D5C] hover:text-white hover:border-[#3A7D5C]"
@@ -293,7 +293,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           onClick={() => canEdit && onStatusChange(row.id, "EXCUSED")}
                           disabled={!canEdit}
                           aria-label="Sababli deb qayd etish"
-                          className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                          className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[4px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "EXCUSED"
                               ? "bg-[#C08A2E] text-white border-[#C08A2E] shadow-xs"
                               : "bg-page text-muted border-divider hover:bg-[#C08A2E] hover:text-white hover:border-[#C08A2E]"
@@ -308,7 +308,7 @@ export function AttendanceTable({ data, onStatusChange, canEdit }: AttendanceTab
                           onClick={() => canEdit && onStatusChange(row.id, "UNEXCUSED")}
                           disabled={!canEdit}
                           aria-label="Sababsiz deb qayd etish"
-                          className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[2px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                          className={`min-h-[44px] sm:min-h-[36px] px-3 py-2 sm:py-1.5 rounded-[4px] font-mono text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                             row.status === "UNEXCUSED"
                               ? "bg-[#B23B3B] text-white border-[#B23B3B] shadow-xs"
                               : "bg-page text-muted border-divider hover:bg-[#B23B3B] hover:text-white hover:border-[#B23B3B]"

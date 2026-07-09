@@ -53,8 +53,8 @@ export function AttendanceCharts({ currentRole = "SUPER_ADMIN" }: AttendanceChar
   if (!mounted) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-        <div className="bg-surface border border-divider rounded-[2px] h-80 animate-pulse p-4" />
-        <div className="bg-surface border border-divider rounded-[2px] h-80 animate-pulse p-4" />
+        <div className="bg-surface border border-divider rounded-[8px] h-80 animate-pulse p-4" />
+        <div className="bg-surface border border-divider rounded-[8px] h-80 animate-pulse p-4" />
       </div>
     );
   }
@@ -64,7 +64,7 @@ export function AttendanceCharts({ currentRole = "SUPER_ADMIN" }: AttendanceChar
   return (
     <div className={`grid grid-cols-1 ${showBlockComparison ? "lg:grid-cols-2" : "max-w-4xl"} gap-6 my-6`}>
       {/* Chart 1: 9-Day Attendance Percentage Trend Line Chart */}
-      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-6 shadow-xs">
+      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-6 shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-divider mb-4">
           <div>
             <span className="text-[10px] font-mono text-sub uppercase tracking-wider block">
@@ -74,7 +74,7 @@ export function AttendanceCharts({ currentRole = "SUPER_ADMIN" }: AttendanceChar
               Davomat foizi trendi (%)
             </h3>
           </div>
-          <span className="font-mono text-xs font-bold text-[#3A7D5C] bg-page border border-divider px-2 py-1 rounded-[2px]">
+          <span className="font-mono text-xs font-bold text-[#3A7D5C] bg-page border border-divider px-2 py-1 rounded-[8px]">
             O&apos;RTASHA 94.8%
           </span>
         </div>
@@ -123,7 +123,7 @@ export function AttendanceCharts({ currentRole = "SUPER_ADMIN" }: AttendanceChar
 
       {/* Chart 2: Block Comparison Stacked Bar Chart (ONLY for SUPER_ADMIN or BLOCK_HEAD) */}
       {showBlockComparison && (
-        <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-6 shadow-xs">
+        <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-6 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-divider mb-4">
             <div>
               <span className="text-[10px] font-mono text-sub uppercase tracking-wider block">
@@ -133,7 +133,7 @@ export function AttendanceCharts({ currentRole = "SUPER_ADMIN" }: AttendanceChar
                 Bloklar bo&apos;yicha davomat strukturasi
               </h3>
             </div>
-            <span className="font-mono text-xs font-bold text-main bg-page border border-divider px-2 py-1 rounded-[2px]">
+            <span className="font-mono text-xs font-bold text-main bg-page border border-divider px-2 py-1 rounded-[8px]">
               4 TA BLOK
             </span>
           </div>

@@ -20,7 +20,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Total Students Card */}
-      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
         <div className="flex items-center justify-between pb-2 border-b border-divider mb-3">
           <span className="text-xs font-mono font-bold uppercase text-sub tracking-wider">
             JAMI TALABALAR
@@ -36,7 +36,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       </div>
 
       {/* Present (Bor) Card */}
-      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
         <div className="flex items-center justify-between pb-2 border-b border-divider mb-3">
           <span className="text-xs font-mono font-bold uppercase text-sub tracking-wider">
             BOR (PRESENT)
@@ -54,7 +54,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       </div>
 
       {/* Excused (Sababli yo'q) Card */}
-      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
         <div className="flex items-center justify-between pb-2 border-b border-divider mb-3">
           <span className="text-xs font-mono font-bold uppercase text-sub tracking-wider">
             SABABLI YO&apos;Q
@@ -72,7 +72,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       </div>
 
       {/* Unexcused (Sababsiz yo'q) Card */}
-      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[2px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+      <div className="bg-surface border border-divider border-t-[3px] border-t-accent rounded-[8px] p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
         <div className="flex items-center justify-between pb-2 border-b border-divider mb-3">
           <span className="text-xs font-mono font-bold uppercase text-sub tracking-wider">
             SABABSIZ YO&apos;Q

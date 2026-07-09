@@ -11,7 +11,7 @@ export function Footer() {
           {/* Institutional Branding */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-ink text-surface flex items-center justify-center rounded-[2px] font-mono font-bold text-base border border-sidebarborder">
+              <div className="w-8 h-8 bg-ink text-surface flex items-center justify-center rounded-[8px] shadow-xs font-mono font-bold text-base border border-sidebarborder">
                 TATU
               </div>
               <span className="font-serif font-bold text-main text-base sm:text-lg tracking-tight">
