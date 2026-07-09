@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Institutional Design Tokens - Light Mode */
+  --ink-navy: #101B33;
+  --accent-blue: #2E4A78;
+  --paper: #F6F4EF;
+  --surface: #FFFFFF;
+  --status-present: #3A7D5C;
+  --status-excused: #C08A2E;
+  --status-unexcused: #B23B3B;
+  --border: #E2DFD6;
+  --text-muted: #5C6470;
+
+  /* Semantic Page/Layout Tokens */
+  --bg-page: #F6F4EF;
+  --bg-surface: #FFFFFF;
+  --text-primary: #101B33;
+  --text-secondary: #5C6470;
+  --hairline-border: #E2DFD6;
+  --sidebar-bg: #101B33;
+  --sidebar-text: #FFFFFF;
+  --sidebar-border: #1D2D50;
+  --sidebar-active-bg: #162444;
+  --header-bg: #FFFFFF;
+}
+
+.dark {
+  /* Full Token Swap - Dark Mode */
+  --ink-navy: #E2E8F0;
+  --accent-blue: #5882C1;
+  --paper: #1A2233;
+  --surface: #111827;
+  --status-present: #46966F;
+  --status-excused: #D49F3D;
+  --status-unexcused: #C94C4C;
+  --border: #2D3748;
+  --text-muted: #94A3B8;
+
+  /* Semantic Page/Layout Tokens - Dark Mode */
+  --bg-page: #1A2233;
+  --bg-surface: #111827;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --hairline-border: #2D3748;
+  --sidebar-bg: #0B1220;
+  --sidebar-text: #E2E8F0;
+  --sidebar-border: #1E293B;
+  --sidebar-active-bg: #131E33;
+  --header-bg: #0F172A;
+}
+
+@theme inline {
+  --color-ink: var(--ink-navy);
+  --color-accent: var(--accent-blue);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-present: var(--status-present);
+  --color-excused: var(--status-excused);
+  --color-unexcused: var(--status-unexcused);
+  --color-hairline: var(--border);
+  --color-muted: var(--text-muted);
+
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-surface);
+  --color-main: var(--text-primary);
+  --color-sub: var(--text-secondary);
+  --color-divider: var(--hairline-border);
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebartext: var(--sidebar-text);
+  --color-sidebarborder: var(--sidebar-border);
+  --color-sidebaractive: var(--sidebar-active-bg);
+  --color-topbar: var(--header-bg);
+
+  --font-serif: var(--font-source-serif), serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Institutional minimal border radius (2-4px max) */
+* {
+  border-color: var(--hairline-border);
+}
+
+/* Custom scrollbars for institutional precision */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
