@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
@@ -116,9 +116,45 @@ export default function DashboardShellPage() {
   const [currentRole, setCurrentRole] = useState<"SUPER_ADMIN" | "BLOCK_HEAD" | "FLOOR_HEAD" | "ASSISTANT">("FLOOR_HEAD");
   const [students, setStudents] = useState<StudentRow[]>(INITIAL_STUDENTS);
 
-  // Scalability Drill-Down State (FIX 1 & FIX 3)
+  // Scalability Drill-Down State
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+
+  // Lock Flow State (FIX 3)
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockTimestamp, setLockTimestamp] = useState<string | null>(null);
+
+  // BACKEND NOTE (Phase 3): This localStorage lock mirrors the future DRF attendance_date unique constraint
+  // and DailyAttendanceReport.is_locked field so that once attendance is locked, no further edits are permitted.
+  useEffect(() => {
+    const dateKey = new Date().toISOString().split("T")[0];
+    const storageKey = `attendance_lock_${dateKey}_${selectedBlock || "A-Blok"}_${selectedFloor || 3}`;
+    const savedData = localStorage.getItem(storageKey);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed && parsed.students) {
+          setStudents(parsed.students);
+          setIsLocked(parsed.isLocked || false);
+          setLockTimestamp(parsed.lockTimestamp || null);
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    // If no lock for today or parsing failed, load fresh
+    setStudents(
+      INITIAL_STUDENTS.map((s) => ({
+        ...s,
+        isDraft: false,
+        markedToday: false,
+        reason: "",
+      }))
+    );
+    setIsLocked(false);
+    setLockTimestamp(null);
+  }, [selectedBlock, selectedFloor]);
 
   // Handle role changes gracefully resetting or locking drill-down state
   const handleRoleChange = (role: "SUPER_ADMIN" | "BLOCK_HEAD" | "FLOOR_HEAD" | "ASSISTANT") => {
@@ -135,7 +171,8 @@ export default function DashboardShellPage() {
     }
   };
 
-  const handleStatusChange = (studentId: string, newStatus: "PRESENT" | "EXCUSED" | "UNEXCUSED") => {
+  const handleStatusChange = (studentId: string, newStatus: "PRESENT" | "EXCUSED" | "UNEXCUSED", reason?: string) => {
+    if (isLocked) return;
     setStudents((prev) =>
       prev.map((student) => {
         if (student.id === studentId) {
@@ -148,6 +185,9 @@ export default function DashboardShellPage() {
             status: newStatus,
             unexcusedDays: Math.max(0, student.unexcusedDays + unexcusedDiff),
             lastMarked: new Date().toLocaleTimeString("en-GB"),
+            isDraft: true,
+            markedToday: true,
+            reason: reason !== undefined ? reason : student.reason || "",
           };
         }
         return student;
@@ -155,11 +195,68 @@ export default function DashboardShellPage() {
     );
   };
 
+  const handleSaveAndLock = (unmarkedResolution?: "MARK_UNEXCUSED") => {
+    const nowStr = new Date().toLocaleTimeString("en-GB");
+    const nextStudents = students.map((student) => {
+      const isUnmarked = !student.markedToday && !student.isDraft;
+      if (unmarkedResolution === "MARK_UNEXCUSED" && isUnmarked) {
+        return {
+          ...student,
+          status: "UNEXCUSED" as const,
+          unexcusedDays: student.unexcusedDays + 1,
+          lastMarked: nowStr,
+          isDraft: false,
+          markedToday: true,
+          reason: "Avtomatik (Belgilanmagan)",
+        };
+      }
+      return {
+        ...student,
+        isDraft: false,
+        markedToday: true,
+        lastMarked: student.isDraft || isUnmarked ? nowStr : student.lastMarked,
+      };
+    });
+
+    setStudents(nextStudents);
+    setIsLocked(true);
+    setLockTimestamp(nowStr);
+
+    const dateKey = new Date().toISOString().split("T")[0];
+    const storageKey = `attendance_lock_${dateKey}_${selectedBlock || "A-Blok"}_${selectedFloor || 3}`;
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        isLocked: true,
+        lockTimestamp: nowStr,
+        students: nextStudents,
+      })
+    );
+  };
+
+  const handleResetDemoLock = () => {
+    const dateKey = new Date().toISOString().split("T")[0];
+    const storageKey = `attendance_lock_${dateKey}_${selectedBlock || "A-Blok"}_${selectedFloor || 3}`;
+    localStorage.removeItem(storageKey);
+    setIsLocked(false);
+    setLockTimestamp(null);
+    setStudents(
+      INITIAL_STUDENTS.map((s) => ({
+        ...s,
+        isDraft: false,
+        markedToday: false,
+        reason: "",
+      }))
+    );
+  };
+
   const presentCount = students.filter((s) => s.status === "PRESENT").length;
   const excusedCount = students.filter((s) => s.status === "EXCUSED").length;
   const unexcusedCount = students.filter((s) => s.status === "UNEXCUSED").length;
 
-  const canEditAttendance = currentRole === "FLOOR_HEAD" || currentRole === "ASSISTANT" || currentRole === "BLOCK_HEAD" || currentRole === "SUPER_ADMIN";
+  // FIX 1: Restrict attendance editing to FLOOR_HEAD and ASSISTANT only.
+  // SUPER_ADMIN and BLOCK_HEAD must ALWAYS see the attendance table as read-only (view/oversight only).
+  const canEditAttendance = currentRole === "FLOOR_HEAD" || currentRole === "ASSISTANT";
 
   // Compute what scope string to show or use for TopBar
   const isSuper = currentRole === "SUPER_ADMIN";
@@ -425,6 +522,10 @@ export default function DashboardShellPage() {
                   data={students}
                   onStatusChange={handleStatusChange}
                   canEdit={canEditAttendance}
+                  isLocked={isLocked}
+                  lockTimestamp={lockTimestamp}
+                  onSaveAndLock={handleSaveAndLock}
+                  onResetDemoLock={handleResetDemoLock}
                 />
               </div>
             </>
