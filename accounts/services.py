@@ -34,6 +34,9 @@ def create_block_head(
             block = building
         building = None
 
+    if not building and not block:
+        raise ValidationError("Block sardori (Block Head) yaratish uchun blok yoki bino ko'rsatilishi shart.")
+
     user = User(
         username=username,
         role=User.Role.BLOCK_HEAD,
@@ -72,12 +75,29 @@ def create_floor_head(
         raise PermissionDenied("Qavat sardorini (Floor Head) yaratish uchun avtorizatsiya talab qilinadi.")
 
     block_obj = block if isinstance(block, Block) else None
+    if not block_obj and isinstance(block, int):
+        try:
+            block_obj = Block.objects.get(id=block)
+        except Block.DoesNotExist:
+            pass
+
     floor_obj = floor if isinstance(floor, Floor) else (block if isinstance(block, Floor) else None)
+    if not floor_obj and isinstance(floor, int):
+        try:
+            floor_obj = Floor.objects.get(id=floor)
+        except Floor.DoesNotExist:
+            pass
+
+    if not block_obj and floor_obj and hasattr(floor_obj, 'block') and floor_obj.block:
+        block_obj = floor_obj.block
+
+    target_block_id = getattr(block_obj, 'id', None) or getattr(getattr(floor_obj, 'block', None), 'id', None) or (block if isinstance(block, int) else None)
+    if not target_block_id:
+        raise ValidationError("Qavat sardori (Floor Head) yaratish uchun blok ko'rsatilishi shart.")
 
     if created_by.role == User.Role.BLOCK_HEAD:
         created_by_block_id = created_by.block_id
-        target_block_id = getattr(block_obj, 'id', None) or getattr(getattr(floor_obj, 'block', None), 'id', None) or (block if isinstance(block, int) else None)
-        if created_by_block_id and target_block_id and created_by_block_id != target_block_id:
+        if created_by_block_id != target_block_id:
             raise PermissionDenied("Siz faqat o'zingizga tegishli blok uchun qavat sardori (Floor Head) yarata olasiz.")
     elif created_by.role != User.Role.SUPER_ADMIN:
         raise PermissionDenied("Qavat sardorini (Floor Head) yaratish uchun faqat BLOCK_HEAD yoki SUPER_ADMIN huquqiga ega bo'lishingiz kerak.")
@@ -124,11 +144,19 @@ def create_observer(
         raise PermissionDenied("Kuzatuvchi (Observer) yaratish uchun avtorizatsiya talab qilinadi.")
 
     block_obj = block if isinstance(block, Block) else None
+    if not block_obj and isinstance(block, int):
+        try:
+            block_obj = Block.objects.get(id=block)
+        except Block.DoesNotExist:
+            pass
+
+    target_block_id = getattr(block_obj, 'id', None) or (block if isinstance(block, int) else None)
+    if not target_block_id:
+        raise ValidationError("Kuzatuvchi (Observer) yaratish uchun blok ko'rsatilishi shart.")
 
     if created_by.role == User.Role.BLOCK_HEAD:
         created_by_block_id = created_by.block_id
-        target_block_id = getattr(block_obj, 'id', None) or (block if isinstance(block, int) else None)
-        if created_by_block_id and target_block_id and created_by_block_id != target_block_id:
+        if created_by_block_id != target_block_id:
             raise PermissionDenied("Siz faqat o'zingizga tegishli blok uchun kuzatuvchi (Observer) yarata olasiz.")
     elif created_by.role != User.Role.SUPER_ADMIN:
         raise PermissionDenied("Kuzatuvchi (Observer) yaratish uchun faqat BLOCK_HEAD yoki SUPER_ADMIN huquqiga ega bo'lishingiz kerak.")
@@ -175,17 +203,25 @@ def create_assistant(
         raise PermissionDenied("Yordamchi (Assistant) yaratish uchun avtorizatsiya talab qilinadi.")
 
     floor_obj = floor if isinstance(floor, Floor) else None
+    if not floor_obj and isinstance(floor, int):
+        try:
+            floor_obj = Floor.objects.get(id=floor)
+        except Floor.DoesNotExist:
+            pass
+
     floor_id = getattr(floor_obj, 'id', None) or (floor if isinstance(floor, int) else None)
+    if not floor_id:
+        raise ValidationError("Yordamchi (Assistant) yaratish uchun qavat ko'rsatilishi shart.")
 
     if created_by.role == User.Role.FLOOR_HEAD:
         created_by_floor_id = created_by.floor_id
-        if created_by_floor_id and floor_id and created_by_floor_id != floor_id:
+        if created_by_floor_id != floor_id:
             raise PermissionDenied("Siz faqat o'zingizning qavatingiz uchun yordamchi (Assistant) yarata olasiz.")
     elif created_by.role not in [User.Role.SUPER_ADMIN, User.Role.BLOCK_HEAD]:
         raise PermissionDenied("Yordamchi (Assistant) yaratish uchun faqat FLOOR_HEAD, BLOCK_HEAD yoki SUPER_ADMIN huquqiga ega bo'lishingiz kerak.")
 
     # Enforce assistant limit per floor
-    if floor_id and User.objects.filter(floor_id=floor_id, role=User.Role.ASSISTANT, is_active=True).exists():
+    if User.objects.filter(floor_id=floor_id, role=User.Role.ASSISTANT, is_active=True).exists():
         raise ValidationError("Ushbu qavat uchun yordamchi (Assistant) allaqachon mavjud. Har bir qavatga faqat 1 ta yordamchi tayinlanishi mumkin.")
 
     if not username:

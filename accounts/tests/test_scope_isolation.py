@@ -1,7 +1,9 @@
 import pytest
 from django.urls import reverse
 from rest_framework import status
+from django.core.exceptions import ValidationError
 from accounts.models import User
+from accounts.services import create_observer, create_floor_head
 
 
 @pytest.mark.django_db
@@ -158,3 +160,71 @@ def test_api_create_assistant_limit_enforced(api_client, floor_head_a1, floor_a1
     }
     resp2 = api_client.post(url, data2, format='json')
     assert resp2.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_api_create_assistant_without_floor_id_rejected(api_client, floor_head_a1):
+    api_client.force_authenticate(user=floor_head_a1)
+    url = reverse('api_create_assistant')
+    data = {
+        'username': 'no_floor_asst',
+        'password': 'password123',
+        'full_name': 'No Floor Asst'
+    }
+    resp = api_client.post(url, data, format='json')
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'floor_id' in resp.data
+
+
+@pytest.mark.django_db
+def test_api_create_assistant_limit_cannot_be_bypassed_by_omitting_floor_id(api_client, floor_head_a1, floor_a1):
+    api_client.force_authenticate(user=floor_head_a1)
+    url = reverse('api_create_assistant')
+    data1 = {
+        'username': 'valid_asst',
+        'password': 'password123',
+        'floor_id': floor_a1.id
+    }
+    resp1 = api_client.post(url, data1, format='json')
+    assert resp1.status_code == status.HTTP_201_CREATED
+
+    data2 = {
+        'username': 'bypass_asst',
+        'password': 'password123'
+    }
+    resp2 = api_client.post(url, data2, format='json')
+    assert resp2.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_create_observer_without_block_id_rejected(api_client, block_head_a):
+    api_client.force_authenticate(user=block_head_a)
+    url = reverse('api_create_observer')
+    data = {
+        'username': 'no_block_obs',
+        'password': 'password123',
+        'full_name': 'No Block Obs'
+    }
+    resp = api_client.post(url, data, format='json')
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'block_id' in resp.data
+
+    with pytest.raises(ValidationError, match="Kuzatuvchi.*blok ko'rsatilishi shart"):
+        create_observer(block=None, username="service_obs", password="password123", created_by=block_head_a)
+
+
+@pytest.mark.django_db
+def test_create_floor_head_without_block_id_rejected(api_client, block_head_a):
+    api_client.force_authenticate(user=block_head_a)
+    url = reverse('api_create_floor_head')
+    data = {
+        'username': 'no_block_fh',
+        'password': 'password123',
+        'full_name': 'No Block FH'
+    }
+    resp = api_client.post(url, data, format='json')
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'block_id' in resp.data
+
+    with pytest.raises(ValidationError, match="Qavat sardori.*blok ko'rsatilishi shart"):
+        create_floor_head(block=None, floor=None, username="service_fh", password="password123", created_by=block_head_a)

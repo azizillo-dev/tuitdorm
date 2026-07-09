@@ -65,3 +65,72 @@ class CreateUserSerializer(serializers.Serializer):
     building_id = serializers.IntegerField(required=False, allow_null=True)
     block_id = serializers.IntegerField(required=False, allow_null=True)
     floor_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+class BaseCreateUserSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True)
+    full_name = serializers.CharField(max_length=255, required=False, default="")
+    phone_number = serializers.CharField(max_length=50, required=False, default="")
+
+
+class CreateBlockHeadSerializer(BaseCreateUserSerializer):
+    building_id = serializers.IntegerField(required=False, allow_null=True)
+    block_id = serializers.IntegerField(
+        required=False, allow_null=True,
+        error_messages={
+            "required": "Block sardori (Block Head) yaratish uchun block_id kiritilishi shart.",
+            "null": "Block sardori (Block Head) yaratish uchun block_id kiritilishi shart."
+        }
+    )
+
+    def validate(self, attrs):
+        if attrs.get('block_id') is None and attrs.get('building_id') is None:
+            raise serializers.ValidationError({"block_id": "Block sardori (Block Head) yaratish uchun block_id kiritilishi shart."})
+        return attrs
+
+
+class CreateFloorHeadSerializer(BaseCreateUserSerializer):
+    block_id = serializers.IntegerField(
+        required=True,
+        error_messages={
+            "required": "Qavat sardori (Floor Head) yaratish uchun block_id kiritilishi shart.",
+            "null": "Qavat sardori (Floor Head) yaratish uchun block_id kiritilishi shart."
+        }
+    )
+    floor_id = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        if attrs.get('block_id') is None:
+            raise serializers.ValidationError({"block_id": "Qavat sardori (Floor Head) yaratish uchun block_id kiritilishi shart."})
+        return attrs
+
+
+class CreateObserverSerializer(BaseCreateUserSerializer):
+    block_id = serializers.IntegerField(
+        required=True,
+        error_messages={
+            "required": "Kuzatuvchi (Observer) yaratish uchun block_id kiritilishi shart.",
+            "null": "Kuzatuvchi (Observer) yaratish uchun block_id kiritilishi shart."
+        }
+    )
+
+    def validate(self, attrs):
+        if attrs.get('block_id') is None:
+            raise serializers.ValidationError({"block_id": "Kuzatuvchi (Observer) yaratish uchun block_id kiritilishi shart."})
+        return attrs
+
+
+class CreateAssistantSerializer(BaseCreateUserSerializer):
+    floor_id = serializers.IntegerField(
+        required=True,
+        error_messages={
+            "required": "Yordamchi (Assistant) yaratish uchun floor_id kiritilishi shart.",
+            "null": "Yordamchi (Assistant) yaratish uchun floor_id kiritilishi shart."
+        }
+    )
+
+    def validate(self, attrs):
+        if attrs.get('floor_id') is None:
+            raise serializers.ValidationError({"floor_id": "Yordamchi (Assistant) yaratish uchun floor_id kiritilishi shart."})
+        return attrs

@@ -7,7 +7,13 @@ from rest_framework.views import APIView
 
 from accounts.permissions import IsSuperAdmin, IsBlockHead, IsFloorHeadOrAssistant
 from accounts.selectors import list_users_for_scope
-from accounts.serializers import UserProfileSerializer, CreateUserSerializer
+from accounts.serializers import (
+    UserProfileSerializer,
+    CreateBlockHeadSerializer,
+    CreateFloorHeadSerializer,
+    CreateObserverSerializer,
+    CreateAssistantSerializer,
+)
 from accounts.services import (
     create_block_head,
     create_floor_head,
@@ -30,7 +36,7 @@ class BlockHeadCreateView(APIView):
     permission_classes = (IsAuthenticated, IsSuperAdmin)
 
     def post(self, request):
-        serializer = CreateUserSerializer(data=request.data)
+        serializer = CreateBlockHeadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -70,22 +76,26 @@ class FloorHeadCreateView(APIView):
     permission_classes = (IsAuthenticated, IsBlockHead)
 
     def post(self, request):
-        serializer = CreateUserSerializer(data=request.data)
+        serializer = CreateFloorHeadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        block = None
-        if data.get('block_id'):
+        try:
+            block = Block.objects.get(id=data['block_id'])
+        except Block.DoesNotExist:
+            return Response({"block_id": "Block topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
+
+        floor = None
+        if data.get('floor_id'):
             try:
-                block = Block.objects.get(id=data['block_id'])
-            except Block.DoesNotExist:
-                return Response({"block_id": "Block topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
-        elif request.user.block_id:
-            block = request.user.block
+                floor = Floor.objects.get(id=data['floor_id'])
+            except Floor.DoesNotExist:
+                return Response({"floor_id": "Floor topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = create_floor_head(
                 block=block,
+                floor=floor,
                 username=data['username'],
                 password=data['password'],
                 full_name=data.get('full_name', ''),
@@ -104,18 +114,14 @@ class ObserverCreateView(APIView):
     permission_classes = (IsAuthenticated, IsBlockHead)
 
     def post(self, request):
-        serializer = CreateUserSerializer(data=request.data)
+        serializer = CreateObserverSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        block = None
-        if data.get('block_id'):
-            try:
-                block = Block.objects.get(id=data['block_id'])
-            except Block.DoesNotExist:
-                return Response({"block_id": "Block topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
-        elif request.user.block_id:
-            block = request.user.block
+        try:
+            block = Block.objects.get(id=data['block_id'])
+        except Block.DoesNotExist:
+            return Response({"block_id": "Block topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = create_observer(
@@ -138,18 +144,14 @@ class AssistantCreateView(APIView):
     permission_classes = (IsAuthenticated, IsFloorHeadOrAssistant)
 
     def post(self, request):
-        serializer = CreateUserSerializer(data=request.data)
+        serializer = CreateAssistantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        floor = None
-        if data.get('floor_id'):
-            try:
-                floor = Floor.objects.get(id=data['floor_id'])
-            except Floor.DoesNotExist:
-                return Response({"floor_id": "Floor topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
-        elif request.user.floor_id:
-            floor = request.user.floor
+        try:
+            floor = Floor.objects.get(id=data['floor_id'])
+        except Floor.DoesNotExist:
+            return Response({"floor_id": "Floor topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = create_assistant(
